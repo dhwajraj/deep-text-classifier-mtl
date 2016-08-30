@@ -1,6 +1,10 @@
-**[This code belongs to the "Implementing a CNN for Text Classification in Tensorflow" blog post.](http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/)**
+It is a tensorflow implementation using MULTI-TASK LEARNING for Kim's [Convolutional Neural Networks for Sentence Classification](http://arxiv.org/abs/1408.5882) paper in Tensorflow.
 
-It is slightly simplified implementation of Kim's [Convolutional Neural Networks for Sentence Classification](http://arxiv.org/abs/1408.5882) paper in Tensorflow.
+Core methods are derived from [dennybritz implementation](https://github.com/dennybritz/cnn-text-classification-tf)
+The major refactoring has been done to incorporate the following:
+ - Loading pre-trained word embeddings
+ - Loading tab separated training text (format : label<tab>text<newline>)
+ - Training multiple different binary classification tasks at once (Multi-Task Learning)
 
 ## Requirements
 
