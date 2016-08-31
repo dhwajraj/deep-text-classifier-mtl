@@ -7,8 +7,6 @@ The major refactoring has been done to incorporate the following:
  - Training multiple different binary classification tasks at once (Multi-Task Learning)
 
 
-![multi task learning](https://cloud.githubusercontent.com/assets/9861437/18117883/233370b8-6f6f-11e6-8409-15e7ca5a7541.png)
-
 ## Method
 Following diagram is depicting the deep architecture for a single binary text classification task using Convolutional Neural Networks. Image taken from Ye Zhang's paper.
 ![deep text classifier CNN](https://cloud.githubusercontent.com/assets/9861437/18117883/233370b8-6f6f-11e6-8409-15e7ca5a7541.png)
@@ -16,7 +14,7 @@ Following diagram is depicting the deep architecture for a single binary text cl
 # Why Multi-Task Learning
 
 In multi-task alternative training, same model is alternatively trained to perform multiple binary classification tasks in the same language.
-![multi task learning](https://cloud.githubusercontent.com/assets/9861437/18117883/233370b8-6f6f-11e6-8409-15e7ca5a7541.png)
+![multi task learning](https://cloud.githubusercontent.com/assets/9861437/18118503/d087e66a-6f72-11e6-9fd8-d157d529e2b2.png)
 
 Multi-task training can exploit the fact that different sequence tagging tasks in one language share language-specific regularities. The basic idea is to share part of the architecture and parameters between tasks, and to alternatively train multiple objective functions with respect to different tasks. Tensorflow automatically figures out which calculations are needed for the operation you requested, and only conducts those calculations. This means that if we define an optimiser on only one of the tasks, it will only train the parameters required to compute that task - and will leave the rest alone. Since Task 1 relies only on the Task 1 and Shared Layers, the Task 2 layer will be untouched. Let’s draw another diagram with the desired optimisers at the end of each task.
 
