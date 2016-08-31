@@ -35,31 +35,59 @@ Print parameters:
 ```
 
 ```
+usage: train.py [-h] [--word2vec WORD2VEC] [--embedding_dim EMBEDDING_DIM]
+                [--filter_sizes FILTER_SIZES] [--filter_h_pad FILTER_H_PAD]
+                [--num_filters NUM_FILTERS]
+                [--dropout_keep_prob DROPOUT_KEEP_PROB]
+                [--l2_reg_lambda L2_REG_LAMBDA]
+                [--max_document_words MAX_DOCUMENT_WORDS]
+                [--training_files TRAINING_FILES]
+                [--hidden_units HIDDEN_UNITS] [--batch_size BATCH_SIZE]
+                [--num_epochs NUM_EPOCHS] [--evaluate_every EVALUATE_EVERY]
+                [--checkpoint_every CHECKPOINT_EVERY]
+                [--allow_soft_placement [ALLOW_SOFT_PLACEMENT]]
+                [--noallow_soft_placement]
+                [--log_device_placement [LOG_DEVICE_PLACEMENT]]
+                [--nolog_device_placement]
+
 optional arguments:
   -h, --help            show this help message and exit
+  --word2vec WORD2VEC   Word2vec file with pre-trained embeddings (default:
+                        None)
   --embedding_dim EMBEDDING_DIM
-                        Dimensionality of character embedding (default: 128)
+                        Dimensionality of character embedding (default: 300)
   --filter_sizes FILTER_SIZES
-                        Comma-separated filter sizes (default: '3,4,5')
+                        Comma-separated filter sizes (default: '2,3,4')
+  --filter_h_pad FILTER_H_PAD
+                        Pre-padding for each filter (default: 5)
   --num_filters NUM_FILTERS
                         Number of filters per filter size (default: 128)
-  --l2_reg_lambda L2_REG_LAMBDA
-                        L2 regularizaion lambda (default: 0.0)
   --dropout_keep_prob DROPOUT_KEEP_PROB
                         Dropout keep probability (default: 0.5)
+  --l2_reg_lambda L2_REG_LAMBDA
+                        L2 regularizaion lambda (default: 0.0)
+  --max_document_words MAX_DOCUMENT_WORDS
+                        Max length (left to right max words to consider) in
+                        every doc, else pad 0 (default: 100)
+  --training_files TRAINING_FILES
+                        Comma-separated list of training files (each file is
+                        tab separated format) (default: None)
+  --hidden_units HIDDEN_UNITS
+                        Number of hidden units in softmax regression layer
+                        (default:50)
   --batch_size BATCH_SIZE
                         Batch Size (default: 64)
   --num_epochs NUM_EPOCHS
-                        Number of training epochs (default: 100)
+                        Number of training epochs (default: 200)
   --evaluate_every EVALUATE_EVERY
                         Evaluate model on dev set after this many steps
                         (default: 100)
   --checkpoint_every CHECKPOINT_EVERY
                         Save model after this many steps (default: 100)
-  --allow_soft_placement ALLOW_SOFT_PLACEMENT
+  --allow_soft_placement [ALLOW_SOFT_PLACEMENT]
                         Allow device soft device placement
   --noallow_soft_placement
-  --log_device_placement LOG_DEVICE_PLACEMENT
+  --log_device_placement [LOG_DEVICE_PLACEMENT]
                         Log placement of ops on devices
   --nolog_device_placement
 
@@ -68,7 +96,7 @@ optional arguments:
 Train:
 
 ```bash
-./train.py
+./train.py --training_files /mnt/train_task1.txt,/mnt/train_task2.txt
 ```
 
 ## Evaluating
