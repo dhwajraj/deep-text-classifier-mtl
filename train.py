@@ -16,10 +16,6 @@ import gzip
 # Parameters
 # ==================================================
 
-training_paths=["task1_train.tsv","task2_train.tsv","task3_train.tsv"]
-
-multi_train_size = len(training_paths)
-
 tf.flags.DEFINE_string("word2vec", 1, "Word2vec file with pre-trained embeddings (default: None)")
 tf.flags.DEFINE_integer("embedding_dim", 300, "Dimensionality of character embedding (default: 300)")
 tf.flags.DEFINE_string("filter_sizes", "2,3,4", "Comma-separated filter sizes (default: '2,3,4')")
@@ -28,6 +24,7 @@ tf.flags.DEFINE_integer("num_filters", 128, "Number of filters per filter size (
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability (default: 0.5)")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.0, "L2 regularizaion lambda (default: 0.0)")
 tf.flags.DEFINE_integer("max_document_words", 100, "Max length (left to right max words to consider) in every doc, else pad 0 (default: 100)")
+tf.flags.DEFINE_string("training_files", None, "Comma-separated list of training files (each file is tab separated format) (default: None)")
 tf.flags.DEFINE_integer("hidden_units", 50, "Number of hidden units in softmax regression layer (default:50)")
 
 # Training parameters
@@ -46,10 +43,17 @@ for attr, value in sorted(FLAGS.__flags.items()):
     print("{}={}".format(attr.upper(), value))
 print("")
 
+if FLAGS.training_files==None:
+    print "Input Files List is empty. use --training_files argument."
+    exit()
+ 
+training_paths=FLAGS.training_files.split(",")
+
+multi_train_size = len(training_paths)
 max_document_length = FLAGS.max_document_words
 
 inpH = InputHelper()
-train_set, dev_set = inpH.getDataSets( training_paths, max_document_length, FLAGS.filter_h_pad, 10)
+train_set, dev_set, vocab_processor = inpH.getDataSets(training_paths, max_document_length, FLAGS.filter_h_pad, 10, FLAGS.batch_size)
 inpH.loadW2V()
 # Training
 # ==================================================
@@ -123,7 +127,7 @@ with tf.Graph().as_default():
     saver = tf.train.Saver(tf.all_variables(),max_to_keep=20)
 
     # Write vocabulary
-    #vocab_processor.save(os.path.join(out_dir, "vocab"))
+    vocab_processor.save(os.path.join(out_dir, "vocab"))
 
     # Initialize all variables
     sess.run(tf.initialize_all_variables())
@@ -154,7 +158,7 @@ with tf.Graph().as_default():
                 idx = vocab_processor.vocabulary_.get(w)
                 initW[idx]=np.asarray(arr).astype(np.float32)
         print("assigning initW to cnn. len="+str(len(initW)))
-        del inpH.pre_emb
+        inpH.deletePreEmb()
         gc.collect()
         sess.run(cnn.W.assign(initW))
 
@@ -207,12 +211,12 @@ with tf.Graph().as_default():
         	    list(zip(train_set[i][0], train_set[i][1])), FLAGS.batch_size, FLAGS.num_epochs))
 
     ptr=0
-    for nn in xrange(sum_no_of_batches*FLAGS.num_epochs):
+    for nn in xrange(FLAGS.num_epochs):
         idx=round(np.random.uniform(low=0, high=multi_train_size))
         if idx<0 or idx>multi_train_size-1:
             continue
-	    typeIdx = int(idx)
-	    print typeIdx
+	typeIdx = int(idx)
+	print typeIdx
         batch = batches[typeIdx].next()
         x_batch, y_batch = zip(*batch)
         train_step(x_batch, y_batch,typeIdx)

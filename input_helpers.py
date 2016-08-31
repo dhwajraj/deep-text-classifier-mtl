@@ -6,6 +6,7 @@ import numpy as np
 import time
 import data_helpers
 import gc
+from tensorflow.contrib import learn
 from gensim.models.word2vec import Word2Vec
 import gzip
 
@@ -13,20 +14,27 @@ import gzip
 class InputHelper(object):
     pre_emb = dict()
     
-    def loadW2V(self,type="bin"):
+    def loadW2V(self,emb_path='/home/ubuntu/GoogleNews-vectors-negative300.singles.gz', type="text"):
         print("Loading W2V data...")
+	num_keys = 0
         if type=="text":
             # this seems faster than gensim non-binary load
-            for line in gzip.open('/home/ubuntu/GoogleNews-vectors-modified.txt.gz'):
+            for line in gzip.open(emb_path):
                 l = line.strip().split()
-                pre_emb[l[0]]=np.asarray(l[1:])
+                self.pre_emb[l[0]]=np.asarray(l[1:])
+		num_keys=len(self.pre_emb)
         else:
-            pre_emb = Word2Vec.load_word2vec_format('/home/ubuntu/GoogleNews-vectors-negative300.bin',binary=True)
-            pre_emb.init_sims(replace=True)
-        print("loaded word2vec len ", len(pre_emb))
+            self.pre_emb = Word2Vec.load_word2vec_format(emb_path,binary=True)
+            self.pre_emb.init_sims(replace=True)
+            num_keys=len(self.pre_emb.vocab)
+        print("loaded word2vec len ", num_keys)
+        gc.collect()
+
+    def deletePreEmb(self):
+        self.pre_emb=dict()
         gc.collect()
     
-    def getTsvData(filepath):
+    def getTsvData(self, filepath):
         print("Loading training data from "+filepath)
         x=[]
         y=[]
@@ -35,10 +43,10 @@ class InputHelper(object):
             if len(l)<2:
                 continue
             x.append(l[1])
-        v=np.array([0,1])
-        if l[0]=="-1" or l[0]=="0":
-            v=np.array([1,0])
-        y.append(v)
+            v=np.array([0,1])
+            if l[0]=="-1" or l[0]=="0":
+                v=np.array([1,0])
+            y.append(v)
         return np.asarray(x),np.asarray(y)
     
     
@@ -46,11 +54,12 @@ class InputHelper(object):
     # ==================================================
     
     
-    def getDataSets(self, training_paths, max_document_length, filter_h_pad, percent_dev):
+    def getDataSets(self, training_paths, max_document_length, filter_h_pad, percent_dev, batch_size):
         x_list=[]
         y_list=[]
+	multi_train_size = len(training_paths)
         for i in xrange(multi_train_size):
-            x_temp,y_temp = getTsvData("/home/ubuntu/all_training/"+training_paths[i])
+            x_temp,y_temp = self.getTsvData(training_paths[i])
             x_list.append(x_temp)
             y_list.append(y_temp)
             del x_temp
@@ -81,7 +90,7 @@ class InputHelper(object):
             x_train, x_dev = x_shuffled[:dev_idx], x_shuffled[dev_idx:]
             y_train, y_dev = y_shuffled[:dev_idx], y_shuffled[dev_idx:]
             print("Train/Dev split for {}: {:d}/{:d}".format(training_paths[i1], len(y_train), len(y_dev)))
-            sum_no_of_batches = sum_no_of_batches+(len(y_train)//FLAGS.batch_size)
+            sum_no_of_batches = sum_no_of_batches+(len(y_train)//batch_size)
             train_set.append((x_train,y_train))
             dev_set.append((x_dev,y_dev))
             del x_shuffled
@@ -92,4 +101,4 @@ class InputHelper(object):
         del x_list
         del y_list
         gc.collect()
-        return train_set,dev_set
+        return train_set,dev_set,vocab_processor
