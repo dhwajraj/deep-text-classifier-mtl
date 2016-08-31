@@ -6,6 +6,11 @@ The major refactoring has been done to incorporate the following:
  - Loading tab separated training text (format : label<tab>text<newline>)
  - Training multiple different binary classification tasks at once (Multi-Task Learning)
 
+![deep text classifier CNN](https://cloud.githubusercontent.com/assets/9861437/18117883/233370b8-6f6f-11e6-8409-15e7ca5a7541.png)
+
+![multi task learning](https://cloud.githubusercontent.com/assets/9861437/18117909/4a143988-6f6f-11e6-8d6a-3d1823dcc070.png)
+
+
 ## Requirements
 
 - Python 3
