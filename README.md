@@ -4,14 +4,14 @@ Core methods are derived from [dennybritz implementation](https://github.com/den
 The major refactoring has been done to incorporate the following:
  - Loading pre-trained word embeddings
  - Loading tab separated training text (format : label<tab>text<newline>)
- - Training multiple different binary classification tasks at once (Multi-Task Learning)
+ - Training multiple different binary classification tasks at once (Multi-Task Learning - alternative)
 
 
-## Method
+## CNN text classifier
 Following diagram is depicting the deep architecture for a single binary text classification task using Convolutional Neural Networks. Image taken from Ye Zhang's paper.
 ![deep text classifier CNN](https://cloud.githubusercontent.com/assets/9861437/18117883/233370b8-6f6f-11e6-8409-15e7ca5a7541.png)
 
-# Why Multi-Task Learning
+## Multi-Task Learning
 
 In multi-task alternative training, same model is alternatively trained to perform multiple binary classification tasks in the same language.
 ![multi task learning](https://cloud.githubusercontent.com/assets/9861437/18118503/d087e66a-6f72-11e6-9fd8-d157d529e2b2.png)
@@ -74,7 +74,7 @@ Train:
 ## Evaluating
 
 ```bash
-./eval.py --eval_train --checkpoint_dir="./runs/1459637919/checkpoints/"
+./eval.py --eval_train --checkpoint_dir="./runs/1472534740/checkpoints/"
 ```
 
 Replace the checkpoint dir with the output from the training. To use your own data, change the `eval.py` script to load your data.
