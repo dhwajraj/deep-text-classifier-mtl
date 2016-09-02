@@ -49,7 +49,20 @@ class InputHelper(object):
             y.append(v)
         return np.asarray(x),np.asarray(y)
     
-    
+    def dumpValidation(x_text,y,shuffled_index,dev_idx,i):
+	x_shuffled=x_text[shuffled_index]
+	y_shuffled=y[shuffled_index]
+	x_dev=x_shuffled[dev_idx:]
+        y_dev=y_shuffled[dev_idx:]
+	del x_shuffled
+	del y_shuffled
+	with open('validation.txt'+str(i),'w') as f:
+	    for text,label in zip(x_dev,y_dev):
+		f.write(str(label)+"\t"+text+"\n")
+	    f.close()
+	del x_dev
+	del y_dev
+	
     # Data Preparatopn
     # ==================================================
     
@@ -64,7 +77,6 @@ class InputHelper(object):
             y_list.append(y_temp)
             del x_temp
             del y_temp
-        
         # Build vocabulary
         vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length-filter_h_pad,min_frequency=2)
         vocab_processor.fit_transform(np.concatenate(x_list,axis=0))
@@ -81,12 +93,13 @@ class InputHelper(object):
             shuffle_indices = np.random.permutation(np.arange(len(y)))
             x_shuffled = x[shuffle_indices]
             y_shuffled = y[shuffle_indices]
+            dev_idx = -1*len(y_shuffled)//percent_dev
+            self.dumpValidation(x_text,y,shuffle_indices,dev_idx,i1)
             del x
             del x_text
             del y
             # Split train/test set
             # TODO: This is very crude, should use cross-validation
-            dev_idx = -1*len(y_shuffled)//percent_dev
             x_train, x_dev = x_shuffled[:dev_idx], x_shuffled[dev_idx:]
             y_train, y_dev = y_shuffled[:dev_idx], y_shuffled[dev_idx:]
             print("Train/Dev split for {}: {:d}/{:d}".format(training_paths[i1], len(y_train), len(y_dev)))
@@ -101,4 +114,4 @@ class InputHelper(object):
         del x_list
         del y_list
         gc.collect()
-        return train_set,dev_set,vocab_processor
+        return train_set,dev_set,vocab_processor,sum_no_of_batches
