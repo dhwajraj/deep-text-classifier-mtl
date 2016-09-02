@@ -79,7 +79,7 @@ class InputHelper(object):
             del x_temp
             del y_temp
         # Build vocabulary
-        vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length-filter_h_pad,min_frequency=2)
+        vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length-filter_h_pad,min_frequency=1)
         vocab_processor.fit_transform(np.concatenate(x_list,axis=0))
         print len(vocab_processor.vocabulary_)
         i1=0

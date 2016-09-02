@@ -222,6 +222,8 @@ with tf.Graph().as_default():
 	print typeIdx
         batch = batches[typeIdx].next()
         x_batch, y_batch = zip(*batch)
+	if len(y_batch)<1:
+	    continue
         train_step(x_batch, y_batch,typeIdx)
         current_step = tf.train.global_step(sess, global_step)
         if current_step % FLAGS.evaluate_every == 0:
@@ -230,6 +232,8 @@ with tf.Graph().as_default():
             	dev_batches = data_helpers.batch_iter(list(zip(dev_set[dtypeIdx][0],dev_set[dtypeIdx][1])), 2*FLAGS.batch_size, 1)
             	for db in dev_batches:
             		x_dev_b,y_dev_b = zip(*db)
+			if len(y_dev_b)<1:
+			    continue
             		dev_step(x_dev_b, y_dev_b, dtypeIdx)
             	print("")
         if current_step % FLAGS.checkpoint_every == 0:
