@@ -49,7 +49,8 @@ class InputHelper(object):
             y.append(v)
         return np.asarray(x),np.asarray(y)
     
-    def dumpValidation(x_text,y,shuffled_index,dev_idx,i):
+    def dumpValidation(self,x_text,y,shuffled_index,dev_idx,i):
+	print("dumping validation "+str(i))
 	x_shuffled=x_text[shuffled_index]
 	y_shuffled=y[shuffled_index]
 	x_dev=x_shuffled[dev_idx:]
