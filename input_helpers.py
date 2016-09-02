@@ -16,13 +16,13 @@ class InputHelper(object):
     
     def loadW2V(self,emb_path, type="textgz"):
         print("Loading W2V data...")
-	num_keys = 0
-        if type=="textgz":
+        num_keys = 0
+        if type=="text":
             # this seems faster than gensim non-binary load
             for line in gzip.open(emb_path):
                 l = line.strip().split()
                 self.pre_emb[l[0]]=np.asarray(l[1:])
-		num_keys=len(self.pre_emb)
+            num_keys=len(self.pre_emb)
         else:
             self.pre_emb = Word2Vec.load_word2vec_format(emb_path,binary=True)
             self.pre_emb.init_sims(replace=True)
@@ -50,20 +50,20 @@ class InputHelper(object):
         return np.asarray(x),np.asarray(y)
     
     def dumpValidation(self,x_text,y,shuffled_index,dev_idx,i):
-	print("dumping validation "+str(i))
-	x_shuffled=x_text[shuffled_index]
-	y_shuffled=y[shuffled_index]
-	x_dev=x_shuffled[dev_idx:]
+        print("dumping validation "+str(i))
+        x_shuffled=x_text[shuffled_index]
+        y_shuffled=y[shuffled_index]
+        x_dev=x_shuffled[dev_idx:]
         y_dev=y_shuffled[dev_idx:]
-	del x_shuffled
-	del y_shuffled
-	with open('validation.txt'+str(i),'w') as f:
-	    for text,label in zip(x_dev,y_dev):
-		f.write(str(label)+"\t"+text+"\n")
-	    f.close()
-	del x_dev
-	del y_dev
-	
+        del x_shuffled
+        del y_shuffled
+        with open('validation.txt'+str(i),'w') as f:
+            for text,label in zip(x_dev,y_dev):
+                f.write(str(label)+"\t"+text+"\n")
+            f.close()
+        del x_dev
+        del y_dev
+    
     # Data Preparatopn
     # ==================================================
     
@@ -71,7 +71,7 @@ class InputHelper(object):
     def getDataSets(self, training_paths, max_document_length, filter_h_pad, percent_dev, batch_size):
         x_list=[]
         y_list=[]
-	multi_train_size = len(training_paths)
+        multi_train_size = len(training_paths)
         for i in xrange(multi_train_size):
             x_temp,y_temp = self.getTsvData(training_paths[i])
             x_list.append(x_temp)

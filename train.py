@@ -25,7 +25,7 @@ tf.flags.DEFINE_string("filter_h_pad", 5, "Pre-padding for each filter (default:
 tf.flags.DEFINE_integer("num_filters", 128, "Number of filters per filter size (default: 128)")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability (default: 0.5)")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.0, "L2 regularizaion lambda (default: 0.0)")
-tf.flags.DEFINE_integer("max_document_words", 100, "Max length (left to right max words to consider) in every doc, else pad 0 (default: 100)")
+tf.flags.DEFINE_integer("max_document_words", 600, "Max length (left to right max words to consider) in every doc, else pad 0 (default: 100)")
 tf.flags.DEFINE_string("training_files", None, "Comma-separated list of training files (each file is tab separated format) (default: None)")
 tf.flags.DEFINE_integer("hidden_units", 50, "Number of hidden units in softmax regression layer (default:50)")
 
@@ -83,11 +83,12 @@ with tf.Graph().as_default():
         global_step = tf.Variable(0, name="global_step", trainable=False)
         optimizer = tf.train.AdamOptimizer(1e-3)
         print("initialized cnn object")
-	grad_set=[]
-	tr_op_set=[]
-	for i2 in xrange(multi_train_size):
-            grads_and_vars=optimizer.compute_gradients(cnn.loss[i2])
-            tr_op_set.append(optimizer.apply_gradients(grads_and_vars, global_step=global_step))
+    grad_set=[]
+    tr_op_set=[]
+    for i2 in xrange(multi_train_size):
+        #optimizer = tf.train.AdamOptimizer(1e-3)
+        grads_and_vars=optimizer.compute_gradients(cnn.loss[i2])
+        tr_op_set.append(optimizer.apply_gradients(grads_and_vars, global_step=global_step))
     print("defined training_ops")
     # Keep track of gradient values and sparsity (optional)
     grad_summaries = []
@@ -115,12 +116,12 @@ with tf.Graph().as_default():
         train_summary_dir = os.path.join(out_dir, "summaries", "train")
         train_summary_writer = tf.train.SummaryWriter(train_summary_dir, sess.graph)
         train_summary_writer.flush()
-	    print("init train summary")
+        print("init train summary")
         # Dev summaries
         dev_summary_op = tf.merge_summary([loss_summary, acc_summary])
         dev_summary_dir = os.path.join(out_dir, "summaries", "dev")
         dev_summary_writer = tf.train.SummaryWriter(dev_summary_dir, sess.graph)
-	    print("init dev summary")
+        print("init dev summary")
     """
     # Checkpoint directory. Tensorflow assumes this directory already exists so we need to create it
     checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
@@ -134,11 +135,11 @@ with tf.Graph().as_default():
 
     # Initialize all variables
     sess.run(tf.initialize_all_variables())
-	
+    
     print("init all variables")
     graph_def = tf.get_default_graph().as_graph_def()
     graphpb_txt = str(graph_def)
-    with open('graphpb.txt', 'w') as f:
+    with open(os.path.join(out_dir, "graphpb.txt"), 'w') as f:
         f.write(graphpb_txt)
 
     if FLAGS.word2vec:
@@ -174,11 +175,11 @@ with tf.Graph().as_default():
                              cnn.dropout_keep_prob: FLAGS.dropout_keep_prob,
         }
         for i in xrange(multi_train_size):
-		if i==typeIdx:
-			feed_dict[cnn.input_y[i]] = y_batch
-		else:
-			feed_dict[cnn.input_y[i]] = np.zeros((len(x_batch),2))
-	     
+            if i==typeIdx:
+                feed_dict[cnn.input_y[i]] = y_batch
+            else:
+                feed_dict[cnn.input_y[i]] = np.zeros((len(x_batch),2))
+         
         _, step, loss, accuracy, pred = sess.run([tr_op_set[typeIdx], global_step, cnn.loss[typeIdx], cnn.accuracy[typeIdx], cnn.predictions[typeIdx]],  feed_dict)
         time_str = datetime.datetime.now().isoformat()
         print("TRAIN {}: type {}, step {}, loss {:g}, acc {:g}".format(time_str, typeIdx, step, loss, accuracy))
@@ -210,24 +211,25 @@ with tf.Graph().as_default():
     # Generate batches
     batches=[]
     for i in xrange(multi_train_size):
-    	batches.append(data_helpers.batch_iter(
-        	    list(zip(train_set[i][0], train_set[i][1])), FLAGS.batch_size, FLAGS.num_epochs))
+        batches.append(data_helpers.batch_iter(
+                list(zip(train_set[i][0], train_set[i][1])), FLAGS.batch_size, FLAGS.num_epochs))
 
     ptr=0
     for nn in xrange(sum_no_of_batches*FLAGS.num_epochs):
         idx=round(np.random.uniform(low=0, high=multi_train_size))
         if idx<0 or idx>multi_train_size-1:
             continue
-	typeIdx = int(idx)
-	print typeIdx
+        typeIdx = int(idx)
+        print typeIdx
         batch = batches[typeIdx].next()
         x_batch, y_batch = zip(*batch)
-	if len(y_batch)<1:
-	    continue
+	    if len(y_batch)<1:
+	        continue
         train_step(x_batch, y_batch,typeIdx)
         current_step = tf.train.global_step(sess, global_step)
         if current_step % FLAGS.evaluate_every == 0:
             for dtypeIdx in xrange(multi_train_size):
+
             	print("\nEvaluation:")
             	dev_batches = data_helpers.batch_iter(list(zip(dev_set[dtypeIdx][0],dev_set[dtypeIdx][1])), 2*FLAGS.batch_size, 1)
             	for db in dev_batches:
