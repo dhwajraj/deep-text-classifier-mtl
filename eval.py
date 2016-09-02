@@ -8,14 +8,16 @@ import datetime
 import data_helpers
 from text_cnn import TextCNN
 from tensorflow.contrib import learn
-
+from input_helpers import InputHelper
 # Parameters
 # ==================================================
 
 # Eval Parameters
 tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
 tf.flags.DEFINE_string("checkpoint_dir", "", "Checkpoint directory from training run")
-tf.flags.DEFINE_boolean("eval_train", False, "Evaluate on all training data")
+tf.flags.DEFINE_string("eval_filepath", "/Users/dhwaj/model_dual_20400/validation.txt0", "Evaluate on this data (Default: None)")
+tf.flags.DEFINE_string("vocab_filepath", "/Users/dhwaj/model_dual_20400/vocab", "Load training time vocabulary (Default: None)")
+tf.flags.DEFINE_string("model", "/Users/dhwaj/model_dual_20400/model-800", "Load trained model checkpoint (Default: None)")
 
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
@@ -29,24 +31,20 @@ for attr, value in sorted(FLAGS.__flags.items()):
     print("{}={}".format(attr.upper(), value))
 print("")
 
-# CHANGE THIS: Load data. Load your own data here
-if FLAGS.eval_train:
-    x_raw, y_test = data_helpers.load_data_and_labels()
-    y_test = np.argmax(y_test, axis=1)
-else:
-    x_raw = ["a masterpiece four years in the making", "everything is off."]
-    y_test = [1, 0]
+if FLAGS.eval_filepath==None or FLAGS.vocab_filepath==None or FLAGS.model==None :
+    print("Eval or Vocab filepaths are empty.")
+    exit()
 
-# Map data into vocabulary
-vocab_path = os.path.join(FLAGS.checkpoint_dir, "..", "vocab")
-vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
-x_test = np.array(list(vocab_processor.transform(x_raw)))
+# load data and map id-transform based on training time vocabulary
+inpH = InputHelper()
+x_test,y_test = inpH.getTestDataSet(FLAGS.eval_filepath, FLAGS.vocab_filepath, 600, 5)
 
 print("\nEvaluating...\n")
 
 # Evaluation
 # ==================================================
-checkpoint_file = tf.train.latest_checkpoint(FLAGS.checkpoint_dir)
+checkpoint_file = FLAGS.model
+print checkpoint_file
 graph = tf.Graph()
 with graph.as_default():
     session_conf = tf.ConfigProto(
@@ -64,7 +62,7 @@ with graph.as_default():
         dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]
 
         # Tensors we want to evaluate
-        predictions = graph.get_operation_by_name("output/predictions").outputs[0]
+        predictions = graph.get_operation_by_name("output0/predictions0").outputs[0]
 
         # Generate batches for one epoch
         batches = data_helpers.batch_iter(list(x_test), FLAGS.batch_size, 1, shuffle=False)
@@ -77,7 +75,10 @@ with graph.as_default():
             all_predictions = np.concatenate([all_predictions, batch_predictions])
 
 # Print accuracy if y_test is defined
+print all_predictions
+y=np.argmax(y_test, axis=1).astype(np.float32)
+print y
 if y_test is not None:
-    correct_predictions = float(sum(all_predictions == y_test))
+    correct_predictions = float(np.sum(all_predictions == y))
     print("Total number of test examples: {}".format(len(y_test)))
     print("Accuracy: {:g}".format(correct_predictions/float(len(y_test))))

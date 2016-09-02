@@ -116,3 +116,20 @@ class InputHelper(object):
         del y_list
         gc.collect()
         return train_set,dev_set,vocab_processor,sum_no_of_batches
+    
+    def getTestDataSet(self, data_path, vocab_path, max_document_length, filter_h_pad):
+        x_temp,y = self.getTsvData(data_path)
+
+        # Build vocabulary
+        vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length-filter_h_pad,min_frequency=1)
+        vocab_processor.restore(vocab_path)
+        print len(vocab_processor.vocabulary_)
+
+        x = np.asarray(list(vocab_processor.transform(x_temp)))
+        x = np.concatenate((np.zeros((len(x),filter_h_pad)),x),axis=1)
+        # Randomly shuffle data
+        del x_temp
+        del vocab_processor
+        gc.collect()
+        return x, y
+

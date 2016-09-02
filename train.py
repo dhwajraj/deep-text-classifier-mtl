@@ -131,7 +131,7 @@ with tf.Graph().as_default():
     saver = tf.train.Saver(tf.all_variables(),max_to_keep=20)
 
     # Write vocabulary
-    vocab_processor.save(os.path.join(out_dir, "vocab"))
+    vocab_processor.save(os.path.join(checkpoint_dir, "vocab"))
 
     # Initialize all variables
     sess.run(tf.initialize_all_variables())
@@ -139,7 +139,7 @@ with tf.Graph().as_default():
     print("init all variables")
     graph_def = tf.get_default_graph().as_graph_def()
     graphpb_txt = str(graph_def)
-    with open(os.path.join(out_dir, "graphpb.txt"), 'w') as f:
+    with open(os.path.join(checkpoint_dir, "graphpb.txt"), 'w') as f:
         f.write(graphpb_txt)
 
     if FLAGS.word2vec:
