@@ -223,8 +223,8 @@ with tf.Graph().as_default():
         print typeIdx
         batch = batches[typeIdx].next()
         x_batch, y_batch = zip(*batch)
-	    if len(y_batch)<1:
-	        continue
+	if len(y_batch)<1:
+	    continue
         train_step(x_batch, y_batch,typeIdx)
         current_step = tf.train.global_step(sess, global_step)
         if current_step % FLAGS.evaluate_every == 0:
