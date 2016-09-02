@@ -16,7 +16,9 @@ import gzip
 # Parameters
 # ==================================================
 
-tf.flags.DEFINE_string("word2vec", 1, "Word2vec file with pre-trained embeddings (default: None)")
+tf.flags.DEFINE_string("word2vec", "GoogleNews-vectors-negative300.singles.gz", "Word2vec file with pre-trained embeddings (default: None)")
+tf.flags.DEFINE_string("word2vec_format", "textgz", "Word2vec pretrained file format. textgz: gzipped text | bin: binary format (default: textgz)")
+tf.flags.DEFINE_boolean("word2vec_trainable", False, "Allow modification of w2v embedding weights (True/False)")
 tf.flags.DEFINE_integer("embedding_dim", 300, "Dimensionality of character embedding (default: 300)")
 tf.flags.DEFINE_string("filter_sizes", "2,3,4", "Comma-separated filter sizes (default: '2,3,4')")
 tf.flags.DEFINE_string("filter_h_pad", 5, "Pre-padding for each filter (default: 5)")
@@ -54,7 +56,7 @@ max_document_length = FLAGS.max_document_words
 
 inpH = InputHelper()
 train_set, dev_set, vocab_processor,sum_no_of_batches = inpH.getDataSets(training_paths, max_document_length, FLAGS.filter_h_pad, 10, FLAGS.batch_size)
-inpH.loadW2V()
+inpH.loadW2V(FLAGS.word2vec, FLAGS.word2vec_format)
 # Training
 # ==================================================
 print("starting graph def")
@@ -74,7 +76,8 @@ with tf.Graph().as_default():
             filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
             num_filters=FLAGS.num_filters,
             hidden_units=FLAGS.hidden_units,
-            l2_reg_lambda=FLAGS.l2_reg_lambda)
+            l2_reg_lambda=FLAGS.l2_reg_lambda,
+            retrain_emb=FLAGS.word2vec_trainable)
 
         # Define Training procedure
         global_step = tf.Variable(0, name="global_step", trainable=False)

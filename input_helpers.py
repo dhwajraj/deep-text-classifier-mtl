@@ -14,10 +14,10 @@ import gzip
 class InputHelper(object):
     pre_emb = dict()
     
-    def loadW2V(self,emb_path='/home/ubuntu/GoogleNews-vectors-negative300.singles.gz', type="text"):
+    def loadW2V(self,emb_path, type="textgz"):
         print("Loading W2V data...")
 	num_keys = 0
-        if type=="text":
+        if type=="textgz":
             # this seems faster than gensim non-binary load
             for line in gzip.open(emb_path):
                 l = line.strip().split()
