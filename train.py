@@ -53,7 +53,7 @@ multi_train_size = len(training_paths)
 max_document_length = FLAGS.max_document_words
 
 inpH = InputHelper()
-train_set, dev_set, vocab_processor = inpH.getDataSets(training_paths, max_document_length, FLAGS.filter_h_pad, 10, FLAGS.batch_size)
+train_set, dev_set, vocab_processor,sum_no_of_batches = inpH.getDataSets(training_paths, max_document_length, FLAGS.filter_h_pad, 10, FLAGS.batch_size)
 inpH.loadW2V()
 # Training
 # ==================================================
@@ -211,7 +211,7 @@ with tf.Graph().as_default():
         	    list(zip(train_set[i][0], train_set[i][1])), FLAGS.batch_size, FLAGS.num_epochs))
 
     ptr=0
-    for nn in xrange(FLAGS.num_epochs):
+    for nn in xrange(sum_no_of_batches*FLAGS.num_epochs):
         idx=round(np.random.uniform(low=0, high=multi_train_size))
         if idx<0 or idx>multi_train_size-1:
             continue
