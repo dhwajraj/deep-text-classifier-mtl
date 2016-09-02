@@ -79,7 +79,7 @@ class TextCNN(object):
                 b = tf.Variable(tf.constant(0.1, shape=[hidden_units]), name="b"+str(i))
                 l2_loss[i] += tf.nn.l2_loss(W)
                 l2_loss[i] += tf.nn.l2_loss(b)
-                inference = tf.sigmoid(tf.nn.bias_add(tf.matmul(self.h_drop,W), b))
+                inference = tf.sigmoid(tf.nn.bias_add(tf.matmul(self.h_drop,W), b), name="sigmoid"+str(i))
                 inference = tf.nn.dropout(inference, self.dropout_keep_prob)
                 W2 = tf.get_variable(
                         "W2"+str(i),
