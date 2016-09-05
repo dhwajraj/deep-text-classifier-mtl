@@ -15,9 +15,9 @@ from input_helpers import InputHelper
 # Eval Parameters
 tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
 tf.flags.DEFINE_string("checkpoint_dir", "", "Checkpoint directory from training run")
-tf.flags.DEFINE_string("eval_filepath", "/Users/dhwaj/model_dual_20400/validation.txt0", "Evaluate on this data (Default: None)")
+tf.flags.DEFINE_string("eval_filepath", "/Users/dhwaj/model_dual_20400/validation.txt1", "Evaluate on this data (Default: None)")
 tf.flags.DEFINE_string("vocab_filepath", "/Users/dhwaj/model_dual_20400/vocab", "Load training time vocabulary (Default: None)")
-tf.flags.DEFINE_string("model", "/Users/dhwaj/model_dual_20400/model-800", "Load trained model checkpoint (Default: None)")
+tf.flags.DEFINE_string("model", "/Users/dhwaj/model_dual_20400/model-142200", "Load trained model checkpoint (Default: None)")
 
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
@@ -54,31 +54,35 @@ with graph.as_default():
     with sess.as_default():
         # Load the saved meta graph and restore variables
         saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
+        sess.run(tf.initialize_all_variables())
         saver.restore(sess, checkpoint_file)
 
         # Get the placeholders from the graph by name
         input_x = graph.get_operation_by_name("input_x").outputs[0]
+        input_y = graph.get_operation_by_name("input_y1").outputs[0]
+
         # input_y = graph.get_operation_by_name("input_y").outputs[0]
         dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]
 
         # Tensors we want to evaluate
-        predictions = graph.get_operation_by_name("output0/predictions0").outputs[0]
+        predictions = graph.get_operation_by_name("output1/predictions1").outputs[0]
 
+        accuracy = graph.get_operation_by_name("accuracy1/accuracy1").outputs[0]
+        #emb = graph.get_operation_by_name("embedding/W").outputs[0]
+        #embedded_chars = tf.nn.embedding_lookup(emb,input_x)
         # Generate batches for one epoch
-        batches = data_helpers.batch_iter(list(x_test), FLAGS.batch_size, 1, shuffle=False)
-
+        batches = data_helpers.batch_iter(list(zip(x_test,y_test)), 2*FLAGS.batch_size, 1, shuffle=False)
         # Collect the predictions here
         all_predictions = []
 
-        for x_test_batch in batches:
-            batch_predictions = sess.run(predictions, {input_x: x_test_batch, dropout_keep_prob: 1.0})
+        for db in batches:
+            x_dev_b,y_dev_b = zip(*db)
+            batch_predictions, batch_acc = sess.run([predictions,accuracy], {input_x: x_dev_b, input_y:y_dev_b, dropout_keep_prob: 1.0})
             all_predictions = np.concatenate([all_predictions, batch_predictions])
-
-# Print accuracy if y_test is defined
-print all_predictions
-y=np.argmax(y_test, axis=1).astype(np.float32)
-print y
-if y_test is not None:
-    correct_predictions = float(np.sum(all_predictions == y))
-    print("Total number of test examples: {}".format(len(y_test)))
-    print("Accuracy: {:g}".format(correct_predictions/float(len(y_test))))
+            print("DEV acc {}".format(batch_acc))
+            print np.argmax(y_dev_b, 1), batch_predictions
+            
+             
+        y_simple = np.argmax(y_test, 1)
+        correct_predictions = float(np.sum(all_predictions == y_simple))
+        print("Accuracy: {:g}".format(correct_predictions/float(len(y_test))))

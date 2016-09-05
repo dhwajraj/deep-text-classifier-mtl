@@ -122,7 +122,7 @@ class InputHelper(object):
 
         # Build vocabulary
         vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length-filter_h_pad,min_frequency=1)
-        vocab_processor.restore(vocab_path)
+        vocab_processor = vocab_processor.restore(vocab_path)
         print len(vocab_processor.vocabulary_)
 
         x = np.asarray(list(vocab_processor.transform(x_temp)))

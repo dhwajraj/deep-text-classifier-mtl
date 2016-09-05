@@ -128,7 +128,7 @@ with tf.Graph().as_default():
     checkpoint_prefix = os.path.join(checkpoint_dir, "model")
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
-    saver = tf.train.Saver(tf.all_variables(),max_to_keep=20)
+    saver = tf.train.Saver(tf.all_variables(), max_to_keep=100)
 
     # Write vocabulary
     vocab_processor.save(os.path.join(checkpoint_dir, "vocab"))
@@ -215,6 +215,7 @@ with tf.Graph().as_default():
                 list(zip(train_set[i][0], train_set[i][1])), FLAGS.batch_size, FLAGS.num_epochs))
 
     ptr=0
+    max_validation_acc=0.0
     for nn in xrange(sum_no_of_batches*FLAGS.num_epochs):
         idx=round(np.random.uniform(low=0, high=multi_train_size))
         if idx<0 or idx>multi_train_size-1:
@@ -227,17 +228,21 @@ with tf.Graph().as_default():
             continue
         train_step(x_batch, y_batch,typeIdx)
         current_step = tf.train.global_step(sess, global_step)
+        sum_acc=0.0
         if current_step % FLAGS.evaluate_every == 0:
             for dtypeIdx in xrange(multi_train_size):
 
             	print("\nEvaluation:")
             	dev_batches = data_helpers.batch_iter(list(zip(dev_set[dtypeIdx][0],dev_set[dtypeIdx][1])), 2*FLAGS.batch_size, 1)
             	for db in dev_batches:
-            		x_dev_b,y_dev_b = zip(*db)
-			if len(y_dev_b)<1:
-			    continue
-            		dev_step(x_dev_b, y_dev_b, dtypeIdx)
+                    x_dev_b,y_dev_b = zip(*db)
+                    if len(y_dev_b)<1:
+                        continue
+            		acc = dev_step(x_dev_b, y_dev_b, dtypeIdx)
+                    sum_acc = sum_acc + acc
             	print("")
         if current_step % FLAGS.checkpoint_every == 0:
-            saver.save(sess, checkpoint_prefix, global_step=current_step)
-            print("Saved model checkpoint to {}\n".format(checkpoint_prefix))
+            if sum_acc >= max_validation_acc:
+                max_validation_acc = sum_acc
+                saver.save(sess, checkpoint_prefix, global_step=current_step)
+                print("Saved model with sum_accuracy={} checkpoint to {}\n".format(max_validation_acc, checkpoint_prefix))
