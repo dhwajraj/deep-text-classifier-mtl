@@ -17,7 +17,7 @@ class InputHelper(object):
     def loadW2V(self,emb_path, type="textgz"):
         print("Loading W2V data...")
         num_keys = 0
-        if type=="text":
+        if type=="textgz":
             # this seems faster than gensim non-binary load
             for line in gzip.open(emb_path):
                 l = line.strip().split()
