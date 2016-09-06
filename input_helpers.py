@@ -48,7 +48,17 @@ class InputHelper(object):
                 v=np.array([1,0])
             y.append(v)
         return np.asarray(x),np.asarray(y)
-    
+   
+    def getUnlabelData(self, filepath):
+        print("Loading unlabelled data from "+filepath)
+        x=[]
+        for line in open(filepath):
+            l=line.strip()
+            if len(l)<1:
+                continue
+            x.append(l)
+        return np.asarray(x)
+ 
     def dumpValidation(self,x_text,y,shuffled_index,dev_idx,i):
         print("dumping validation "+str(i))
         x_shuffled=x_text[shuffled_index]
@@ -78,11 +88,19 @@ class InputHelper(object):
             y_list.append(y_temp)
             del x_temp
             del y_temp
+        gc.collect()
+        x_unl = self.getUnlabelData('/data3/unlabelled_news.txt')
         # Build vocabulary
+        print("Building vocabulary")
+        x_all = np.asarray(x_list)
+        np.append(x_all,x_unl)
+        del x_unl
+        x_all = np.concatenate(x_all,axis=0)
         vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length-filter_h_pad,min_frequency=1)
-        vocab_processor.fit_transform(np.concatenate(x_list,axis=0))
-        print len(vocab_processor.vocabulary_)
+        vocab_processor.fit_transform(x_all)
+        print("Length of loaded vocabulary ={}".format( len(vocab_processor.vocabulary_)))
         i1=0
+        del x_all
         train_set=[]
         dev_set=[]
         sum_no_of_batches = 0
