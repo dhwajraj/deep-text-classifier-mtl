@@ -239,7 +239,7 @@ with tf.Graph().as_default():
                     x_dev_b,y_dev_b = zip(*db)
                     if len(y_dev_b)<1:
                         continue
-            		acc = dev_step(x_dev_b, y_dev_b, dtypeIdx)
+                    acc = dev_step(x_dev_b, y_dev_b, dtypeIdx)
                     sum_acc = sum_acc + acc
             	print("")
         if current_step % FLAGS.checkpoint_every == 0:
