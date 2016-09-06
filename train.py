@@ -224,6 +224,8 @@ with tf.Graph().as_default():
         typeIdx = int(idx)
         print typeIdx
         batch = batches[typeIdx].next()
+        if len(batch)<1:
+            continue
         x_batch, y_batch = zip(*batch)
         if len(y_batch)<1:
             continue
@@ -236,6 +238,8 @@ with tf.Graph().as_default():
             	print("\nEvaluation:")
             	dev_batches = data_helpers.batch_iter(list(zip(dev_set[dtypeIdx][0],dev_set[dtypeIdx][1])), 2*FLAGS.batch_size, 1)
             	for db in dev_batches:
+                    if len(db)<1:
+                        continue
                     x_dev_b,y_dev_b = zip(*db)
                     if len(y_dev_b)<1:
                         continue
