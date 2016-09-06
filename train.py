@@ -207,6 +207,7 @@ with tf.Graph().as_default():
         print np.argmax(y_batch, 1), pred
         #if writer:
         #    writer.add_summary(summaries, step) 
+        return accuracy
 
     # Generate batches
     batches=[]
