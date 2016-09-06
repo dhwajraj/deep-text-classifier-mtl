@@ -113,3 +113,4 @@ Replace the checkpoint dir with the output from the training. To use your own da
 - [Convolutional Neural Networks for Sentence Classification](http://arxiv.org/abs/1408.5882)
 - [A Sensitivity Analysis of (and Practitioners' Guide to) Convolutional Neural Networks for Sentence Classification](http://arxiv.org/abs/1510.03820)
 - [Jonathan Godwin's explanation of multi-task learning in Tensorflow](http://www.kdnuggets.com/2016/07/multi-task-learning-tensorflow-part-1.html)
+- [Nice tutorial, step wise step ](https://github.com/amygdala/tensorflow-workshop/blob/master/workshop_sections/cnn_text_classification/README.md#using-convolutional-nns-for-text-classification-and-tensorboard)
