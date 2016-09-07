@@ -89,18 +89,12 @@ class InputHelper(object):
             del x_temp
             del y_temp
         gc.collect()
-        x_unl = self.getUnlabelData('/data3/unlabelled_news.txt')
         # Build vocabulary
         print("Building vocabulary")
-        x_all = np.asarray(x_list)
-        np.append(x_all,x_unl)
-        del x_unl
-        x_all = np.concatenate(x_all,axis=0)
         vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length-filter_h_pad,min_frequency=1)
-        vocab_processor.fit_transform(x_all)
+        vocab_processor.fit_transform(np.concatenate(x_list,axis=0))
         print("Length of loaded vocabulary ={}".format( len(vocab_processor.vocabulary_)))
         i1=0
-        del x_all
         train_set=[]
         dev_set=[]
         sum_no_of_batches = 0
